@@ -251,7 +251,7 @@
         if (showUnpublished) return true; // checkbox ticked -> show everything
 
         const row = settings.aoData[dataIndex].nTr;
-        return row.getAttribute('data-published') !== 'false';
+        return row.getAttribute('model-published') !== 'false';
         });
 
         //Makes table formatted

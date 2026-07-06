@@ -205,7 +205,33 @@
     <script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
     <script>
         new DataTable('#data-table', {
-            pageLength: 25
+            pageLength: 25,
+            columnDefs: [
+            {
+                targets: 0,
+                render: function (data, type, row) {
+                if (type === 'sort') {
+                    const match = data.match(/^\((\d+)\)/);
+                    let group, num;
+
+                    if (match) {
+                    group = 0;
+                    num = parseInt(match[1], 10);
+                    } else if (data.includes('/')) {
+                    group = 2;
+                    num = 0;
+                    } else {
+                    group = 1;
+                    num = 0;
+                    }
+
+                    const paddedNum = String(num).padStart(10, '0');
+                    return `${group}_${paddedNum}_${data}`;
+                }
+                return data;
+                }
+            }
+            ]
         });
     </script>
 </body>

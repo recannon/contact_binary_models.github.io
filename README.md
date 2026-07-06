@@ -1,0 +1,1 @@
+Table of current contact binary information

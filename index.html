@@ -18,10 +18,23 @@
   Last updated 06/07/2026.
   <br><br>
   <label>
+  <input type="checkbox" id="show-published">
+  Show published objects
+  </label>
+  <label>
   <input type="checkbox" id="show-unpublished">
   Show unpublished objects
   </label>
-
+  <br>
+  <label>
+  <input type="checkbox" id="show-radar">
+  Observed by radar
+  </label>
+  <label>
+  <input type="checkbox" id="show-spacecraft">
+  Observed by spacecraft
+  </label>
+  <br>
   <table id="data-table" class="display">
     <thead>
             <tr>
@@ -47,7 +60,8 @@
                 <td><a href="model_files/2006dp14_Cannon.obj">Download File</a></td>
                 <td><a href="https://doi.org/10.1093/mnras/staf371">Cannon et al. (2025)</a></td>
             </tr>
-            <tr model-published="true">
+            <tr model-published="true"
+            radar-observed="true">
                 <td>(275677) 2000 RS11</td>
                 <td>NEA</td>
                 <td>Sa</td>
@@ -137,7 +151,8 @@
                 <td><a href="https://echo.jpl.nasa.gov/asteroids/shapes/shapes.html">Available Here</a></td>
                 <td><a href="https://doi.org/10.1016/j.icarus.2018.04.002">Shepard et al. (2018)</a></td>
             </tr>
-            <tr model-published="false">
+            <tr model-published="false"
+            spacecraft-observed="true">
                 <td>(52246) Donaldjohanson</td>
                 <td>MBA</td>
                 <td>?</td>
@@ -308,21 +323,43 @@
             columnDefs.push({ targets: i, orderData: [i, 0] });
         }
 
-        // Unpublished function
         $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-            const showUnpublished = document.getElementById('show-unpublished').checked;
-            if (showUnpublished) return true;
-            const row = settings.aoData[dataIndex].nTr;
-            return row.getAttribute('model-published') !== 'false';
+        const row = settings.aoData[dataIndex].nTr;
+
+        // Group 1: Publication status (OR within group)
+        const showPublished = document.getElementById('show-published').checked;
+        const showUnpublished = document.getElementById('show-unpublished').checked;
+        const isPublished = row.getAttribute('model-published') !== 'false';
+
+        const passesPublication =
+            (!showPublished && !showUnpublished) ||   // neither ticked -> don't filter on this
+            (showPublished && isPublished) ||
+            (showUnpublished && !isPublished);
+
+        // Group 2: Observation method (OR within group)
+        const showRadar = document.getElementById('show-radar').checked;
+        const showSpacecraft = document.getElementById('show-spacecraft').checked;
+        const isRadar = row.getAttribute('radar-observed') === 'true';
+        const isSpacecraft = row.getAttribute('spacecraft-observed') === 'true';
+
+        const passesObservation =
+            (!showRadar && !showSpacecraft) ||        // neither ticked -> don't filter on this
+            (showRadar && isRadar) ||
+            (showSpacecraft && isSpacecraft);
+
+        // AND between groups
+        return passesPublication && passesObservation;
         });
 
         const table = new DataTable('#data-table', {
-            pageLength: 25,
-            columnDefs: columnDefs
+        pageLength: 25,
+        columnDefs: columnDefs
         });
 
-        document.getElementById('show-unpublished').addEventListener('change', function () {
+        ['show-published', 'show-unpublished', 'show-radar', 'show-spacecraft'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function () {
             table.draw();
+        });
         });
     </script>
 </body>
